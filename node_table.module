@@ -1,0 +1,33 @@
+<?php
+
+/**
+ * Example function.
+ */
+
+function _drush_execute_phpc($example = NULL, $additional_option_array = array()) {
+    require_once 'src/php_coder_object.php';
+    $phpc_ob = new php_coder_object($example, $additional_option_array);
+    $phpc_ob->unpack();
+    // switch instead of if-else to make more extensible
+    switch ($phpc_ob->output_message_type) {
+        case 'success':
+            $limit = $limit == 'EEMPTY' ? 0:$limit;
+            $limit = $limit == 'all' ? 0:$limit;
+            $type = 'success';
+            $type_debug_string = $phpc_ob->output_message_type;
+            // $message = 'Okay, I\'ll Compose the SQL';
+            $message = $phpc_ob->output_message;
+            break;
+
+        default:
+            $type = 'error';
+            $type_debug_string = $phpc_ob->output_message_type;
+            $command = $command == NULL?'NNULL':$command;
+            // $message = 'The "' . $command . '" command is not supported, something went very wrong. Please asks for assistance.';
+            $message = $phpc_ob->output_message;
+            drupal_set_message(t($message), $type);
+            drupal_set_message(t("[message set {$type_debug_string}]"), $type);
+            break;
+    }
+  drush_print($phpc_ob->output_string);
+}
