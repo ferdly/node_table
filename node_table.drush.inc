@@ -3,27 +3,45 @@
 /**
  * Implements hook_drush_command().
  */
-function php_coder_drush_command() {
-
-  $items['php-coder'] = array(
-    'description' => "Description php_coder: \r\nComposes SQL Code to apply Auto-Entry Label Titles to current titles. Useful when there is lots of data already entered before AEL implemented, or when the configuration of EAL is tweaked.",
-    'aliases' => array('phpc'), //don't want to collide into others
+function node_objectlist_drush_command() {
+/**
+ * Essential to the function of the Drush Command
+ */
+  $items['node-objectlist'] = array(
+    'aliases' => array(
+      'nodeol',
+      'noodle',
+      ),
     'arguments' => array(
-      'example' => "Example name is the argument. If not supplied, list of AEL enabled examples are generated to select from.",
+      'list' => 'is argument',
+      'cube' => 'is argument',
     ),
     'options' => array(
-      'rand' => 'Pass to the target Example that all options should be randomized.',
-      'select' => 'Pass to the target Example that, where possible, the user should be prompted to select any options.',
-      'dev' => "Allow for skipping over the 'clean' output in favor of 'dev' output as the code progresses. This may be removed or made more useful developers not coding this module.",
-    ),
-    'examples' => array(
-      'drush php-coder' => 'Simply returns the obligatory Hello World string.',
-      'drush phpc' => 'Using the alias, returns the obligatory Hello World string.',
-      'drush php --dev=yes' => 'Returns the full php_coder object (including output string as Hello World).',
+      'orderby' => 'is option',
+      'count' => 'is option',
+      'page' => 'is option',
+      'content_types' => 'is option',
     ),
   );
 
-  return $items;
+/**
+  * $items Append & Overload below
+  * description ONLY here
+  * examples ONLY here
+  * aliases isn't associative so NEVER here
+  * others fleshed out for HELP command
+  */
+$items['node-objectlist']['description'] = "Description php_coder: \r\nComposes SQL Code to apply Auto-Entry Label Titles to current titles. Useful when there is lots of data already entered before AEL implemented, or when the configuration of EAL is tweaked.";
+
+$items['node-objectlist']['arguments']['list'] = "";
+
+$items['node-objectlist']['options']['orderby'] = "";
+
+$items['node-objectlist']['examples']['drush php-coder'] = 'Simply returns the obligatory Hello World string.';
+$items['node-objectlist']['examples']['drush phpc'] = 'Using the alias, returns the obligatory Hello World string.';
+$items['node-objectlist']['examples']['drush php --dev=yes'] = 'Returns the full php_coder object (including output string as Hello World).';
+
+return $items;
 }
 
 /**
