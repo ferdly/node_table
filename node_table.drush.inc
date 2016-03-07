@@ -7,10 +7,10 @@ function node_objectlist_drush_command() {
 /**
  * Essential to the function of the Drush Command
  */
-  $items['node-objectlist'] = array(
+  $items['node-tablelist'] = array(
     'aliases' => array(
-      'nodeol',
-      'noodle',
+      'ntl',
+      'notable',
       ),
     'arguments' => array(
       'list' => 'is argument',
