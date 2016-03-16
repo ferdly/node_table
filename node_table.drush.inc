@@ -74,9 +74,9 @@ function drush_node_table_node_tablelist($which_list = FALSE) {
       array('@type' => $example)) . $string);
   }
 
-  drush_print($which_list);
-  return;
-  // _drush_execute_node_tablelist($which_list);
+  // drush_print($which_list);
+  // return;
+  _drush_execute_node_tablelist($which_list);
 } //END function drush_node_tablelist($which_list = FALSE)
 
 function _which_list_arguments($which = 'array'){
