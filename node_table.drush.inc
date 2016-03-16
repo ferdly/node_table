@@ -19,8 +19,8 @@ function node_table_drush_command() {
     ),
     'options' => array(
       'orderby' => 'is option',
+      'orderby_desc' => 'is option',
       'count' => 'is option',
-      'page' => 'is option',
       'content_types' => 'is option',
     ),
   );
@@ -39,8 +39,8 @@ $items['node-tablelist']['arguments']['groupby'] = "Longer description of Argume
 $items['node-tablelist']['arguments']['cube'] = "Longer description of Argument 'Cube'";
 
 $items['node-tablelist']['options']['orderby'] = "Longer description of Option 'OrderBy'";
+$items['node-tablelist']['options']['orderby_desc'] = "Longer description of Option 'OrderBy DESC'";
 $items['node-tablelist']['options']['count'] = "Longer description of Option 'Count'";
-$items['node-tablelist']['options']['page'] = "Longer description of Option 'Page'";
 $items['node-tablelist']['options']['content_types'] = "Longer description of Option 'Content Types'";
 
 $items['node-tablelist']['examples']['drush node-tablelist'] = 'Simply returns a listing of the nodes.';
@@ -80,17 +80,17 @@ function drush_node_table_node_tablelist($which_list = FALSE) {
 } //END function drush_node_tablelist($which_list = FALSE)
 
 function _which_list_arguments($which = 'array'){
-  $example_options = array();
-  $example_options['list'] = "Help Choice for Node Table List 'List' argument.";
-  $example_options['groupby'] = "Help Choice for Node Table List 'GroupBy' argument.";
-  $example_options['cube'] = "Help Choice for Node Table List 'Cube' argument.";
+  $which_arguments = array();
+  $which_arguments['list'] = "Help Choice for Node Table List 'List' argument.";
+  $which_arguments['groupby'] = "Help Choice for Node Table List 'GroupBy' argument.";
+  $which_arguments['cube'] = "Help Choice for Node Table List 'Cube' argument.";
 
   switch ($which) {
     case 'array':
-      return $example_options;
+      return $which_arguments;
       break;
     case 'string':
-      $correct_args = array_keys($example_options);
+      $correct_args = array_keys($which_arguments);
       $correct_args_count = count($correct_args);
       $first_args = $correct_args;
       $last_arg = '"' .  array_pop($first_args) . '"';
@@ -112,7 +112,7 @@ function _which_list_arguments($which = 'array'){
       break;
 
     default:
-      return $example_options;
+      return $which_arguments;
       #\_ OOAAOC notwithstanding default $which, this is its raison detre
       break;
   }
