@@ -6,6 +6,6 @@
 
 function _drush_execute_node_tablelist($which_list) {
     $buffer = '';
-    $buffer .= "'" . $which_list . "' was the argument provided/selected.";
+    $buffer .= "'" . $which_list . "' was the argument provided/selected to function '" . __FUNCTION__ . "'.";
   drush_print($buffer);
 }
