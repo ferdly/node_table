@@ -1,10 +1,10 @@
-name = PHP Coder
-description = An Example Module to illustrate how to code Drush Commands. Moreover, this module exists to show how Drush is a great, interactive mechanism within which to write PHP Code that will not necessarily be used as Drush Commands.
+name = Node Table
+description = An Example Module to illustrate how to code Drush Commands.
 ; (extended description) PENDING
 
 package = QIQgroup Tools
 core = 7.x
-files[] = php_coder.module
+files[] = node_table.module
 
 
 

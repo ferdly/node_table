@@ -3,7 +3,7 @@
 /**
  * Implements hook_drush_command().
  */
-function node_objectlist_drush_command() {
+function node_table_drush_command() {
 /**
  * Essential to the function of the Drush Command
  */
@@ -14,6 +14,7 @@ function node_objectlist_drush_command() {
       ),
     'arguments' => array(
       'list' => 'is argument',
+      'groupby' => 'is argument',
       'cube' => 'is argument',
     ),
     'options' => array(
@@ -31,15 +32,21 @@ function node_objectlist_drush_command() {
   * aliases isn't associative so NEVER here
   * others fleshed out for HELP command
   */
-$items['node-objectlist']['description'] = "Description php_coder: \r\nComposes SQL Code to apply Auto-Entry Label Titles to current titles. Useful when there is lots of data already entered before AEL implemented, or when the configuration of EAL is tweaked.";
+$items['node-tablelist']['description'] = "Description php_coder: \r\nComposes SQL Code to apply Auto-Entry Label Titles to current titles. Useful when there is lots of data already entered before AEL implemented, or when the configuration of EAL is tweaked.";
 
-$items['node-objectlist']['arguments']['list'] = "";
+$items['node-tablelist']['arguments']['list'] = "Longer description of Argument 'List'";
+$items['node-tablelist']['arguments']['groupby'] = "Longer description of Argument 'GroupBy'";
+$items['node-tablelist']['arguments']['cube'] = "Longer description of Argument 'Cube'";
 
-$items['node-objectlist']['options']['orderby'] = "";
+$items['node-tablelist']['options']['orderby'] = "Longer description of Option 'OrderBy'";
+$items['node-tablelist']['options']['count'] = "Longer description of Option 'Count'";
+$items['node-tablelist']['options']['page'] = "Longer description of Option 'Page'";
+$items['node-tablelist']['options']['content_types'] = "Longer description of Option 'Content Types'";
 
-$items['node-objectlist']['examples']['drush php-coder'] = 'Simply returns the obligatory Hello World string.';
-$items['node-objectlist']['examples']['drush phpc'] = 'Using the alias, returns the obligatory Hello World string.';
-$items['node-objectlist']['examples']['drush php --dev=yes'] = 'Returns the full php_coder object (including output string as Hello World).';
+$items['node-tablelist']['examples']['drush node-tablelist'] = 'Simply returns a listing of the nodes.';
+$items['node-tablelist']['examples']['drush ntl'] = 'Using the alias, returns a listing of the nodes.';
+$items['node-tablelist']['examples']['drush notable'] = 'Using the alias, returns a listing of the nodes.';
+
 
 return $items;
 }
@@ -47,63 +54,37 @@ return $items;
 /**
  * Callback for the drush-demo-command command
  */
-function drush_php_coder($example = FALSE) {
-
+function drush_node_table_node_tablelist($which_list = FALSE) {
+//drush_mymodule_custom_save_node
   // Check for existence of argument
-    $options = _example_options(); //use custom function to encapsulate
-    if (!$example) {
-        $example = drush_choice($options, dt('Which Example would you like to interact with using \'PHP-Coder\'?'));
+    $arguments = _which_list_arguments(); //use custom function to encapsulate
+    if (!$which_list) {
+        $which_list = drush_choice($arguments, dt('Which Example would you like to interact with using \'PHP-Coder\'?'));
     }
 
   // Check for correct argument
-  $correct_args = array_keys($options);
-  if (!in_array($example, $correct_args)) {
-    if ($example == '0') {
-      drush_user_abort('Buh-Bye!');
+  $correct_args = array_keys($arguments);
+  if (!in_array($which_list, $correct_args)) {
+    if ($which_list == '0') {
+      drush_user_abort('Buh-Bye! Node Table List!');
       return;
     }
-    $string = _example_options('string');
+    $string = _which_list_arguments('string');
     return drush_set_error(dt('"@type" is not a valid example. ',
       array('@type' => $example)) . $string);
   }
 
-  // Option
-  $supported_option_array = array(
-    'rand',
-    'select',
-    'dev',
-    );
-  $supported_boolean_options_array = array(
-    'rand',
-    'indent',
-    'dev',
-    );
-  foreach ($supported_option_array as $index => $option) {
-    $option = strtolower($option);//maybe enforce case sensitivity
-    $$option = drush_get_option($option, NULL);
-    if ($$option == 777) {
-      #\_ wrong-test of how to get default value by calling without '='
-      if (in_array($option, $supported_boolean_options_array)) {
-        $$option = 1;
-      }
-    }
-    $key = 'option_';
-    $key .= str_replace('-', '_', $option);
-    $additional_option_array[$key] = $$option;
-  }
-  /**
-   * below shows how you could debug a really basic drush api problem
-   */
-  // drush_print($example);
+  // drush_print($which_list);
   // return;
-  _drush_execute_phpc($example, $additional_option_array);
-} //END function drush_php_coder($example = FALSE)
+  _drush_execute_node_tablelist($which_list);
+} //END function drush_node_tablelist($which_list = FALSE)
 
-function _example_options($which = 'array'){
+function _which_list_arguments($which = 'array'){
   $example_options = array();
-  $example_options['hello'] = "Obligatory 'Hello World!' code.";
-  // $example_options['lorem'] = "General Lorem Ipsum string. Use '--vocab==' option for non-latin vocabularies.";
-  // $example_options['nodeplode'] = "Play around with nodes.";
+  $example_options['list'] = "Help Choice for Node Table List 'List' argument.";
+  $example_options['groupby'] = "Help Choice for Node Table List 'GroupBy' argument.";
+  $example_options['cube'] = "Help Choice for Node Table List 'Cube' argument.";
+
   switch ($which) {
     case 'array':
       return $example_options;
