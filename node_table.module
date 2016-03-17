@@ -9,3 +9,36 @@ function _drush_execute_node_tablelist($which_list) {
     $buffer .= "'" . $which_list . "' was the argument provided/selected to function '" . __FUNCTION__ . "'.";
   drush_print($buffer);
 }
+
+function _query_nid_array() {
+    $build_query_dbtng['main'] = "select nid from node";
+    $build_query_dbtng['where'] = "1 = 1";
+    $build_query_dbtng['limit'] = $arg == 'list' ? 1 : '';
+    $build_query_dbtng['orderby'] = 'nid';
+    $build_query_dbtng['direction'] = 'ASC';
+    $build_query_dbtng['aggregate'] = '';
+
+    if ($option['count'] + 0 > 0) {
+        $limit = $option['count'] + 0;
+        $build_query_dbtng['limit'] = 'LIMIT ' . $limit;
+    }
+    if (strlen($option['orderby'])) {
+        #\_ would normally validate, but too much for demo
+        $build_query_dbtng['orderby'] = 'ORDER BY ' . $option['orderby'];
+    }
+    if ($option['orderby-desc']) {
+        $build_query_dbtng['direction'] = 'DESC';
+    }
+    if (strlen($option['content-types'])) {
+        #\_ would normally validate and implode, but too much for demo
+        $build_query_dbtng['where'] = 'WHERE content_type = ' . $option['content-types'];
+    }
+    if ($argument == 'groupby') {
+        #\_ no options for demo
+        $build_query_dbtng['aggregate'] = 'GROUP BY content_type';
+    }
+    if ($argument == 'cube') {
+        #\_ no options for demo
+        $build_query_dbtng['aggregate'] = 'CUBE content_type';
+    }
+}
