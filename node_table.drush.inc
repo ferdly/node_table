@@ -1,11 +1,39 @@
 <?php
 
 /**
+ * Coding Practices for this (demo) Module
+ * * NOTE: the coding practices explained below are IMHO, they may or may not be
+ *       agreed upon by the Drupal community and/or the Drush community at large
+ *       further, they may or may not adhere to Drupal and/or Drush coding standards
+ *       but, as we all know, that only starts to matter when you choose to publish
+ *       your work, which is beyond the scope of what I am advocating. If you reach that
+ *       juncture -- Congratulations! -- and that is the point at which these issues will
+ *       start to matter.
+ *
+ */
+/**
+ * END Coding Practices for this (demo) Module
+ */
+
+/**
+ * Drush Command Essential Functions
+ * * the function below is the basis of implementing
+ *      one or more Drush Commands
+ * * the additional text that is required to support the 'drush help {command}' can
+ *       get so long and involved it tends to obfuscate the critical 'syntactical' purpose
+ *       the $items array;
+ *       for this reason, I include only the most trivial descriptive
+ *       string below, and implement a specific 'Utility Function',
+ *       _render_help_documentation(), to overload and append the content to flesh-out
+ *       a robust call to 'drush help {command}'
+ */
+
+/**
  * Implements hook_drush_command().
  */
 function node_table_drush_command() {
 /**
- * Essential to the function of the Drush Command
+ *
  */
   $items['node-tablelist'] = array(
     'aliases' => array(
@@ -24,37 +52,51 @@ function node_table_drush_command() {
       'content_types' => 'is option',
     ),
   );
+  $items['fahrenheit-celcius'] = array(
+    'aliases' => array(
+      'fc',
+      ),
+    'arguments' => array(
+      'degrees_fahrenheit' => 'is argument',
+    ),
+    'options' => array(
+      'orderby' => 'is option',
+      'count' => 'is option',
+      'page' => 'is option',
+      'content_types' => 'is option',
+    ),
+  );
+  $items['developer-vardump'] = array(
+    'aliases' => array(
+      'devv',
+      ),
+  );
 
-/**
-  * $items Append & Overload below
-  * description ONLY here
-  * examples ONLY here
-  * aliases isn't associative so NEVER here
-  * others fleshed out for HELP command
-  */
-$items['node-tablelist']['description'] = "Description php_coder: \r\nComposes SQL Code to apply Auto-Entry Label Titles to current titles. Useful when there is lots of data already entered before AEL implemented, or when the configuration of EAL is tweaked.";
-
-$items['node-tablelist']['arguments']['list'] = "Longer description of Argument 'List'";
-$items['node-tablelist']['arguments']['groupby'] = "Longer description of Argument 'GroupBy'";
-$items['node-tablelist']['arguments']['cube'] = "Longer description of Argument 'Cube'";
-
-$items['node-tablelist']['options']['orderby'] = "Longer description of Option 'OrderBy'";
-$items['node-tablelist']['options']['count'] = "Longer description of Option 'Count'";
-$items['node-tablelist']['options']['page'] = "Longer description of Option 'Page'";
-$items['node-tablelist']['options']['content_types'] = "Longer description of Option 'Content Types'";
-
-$items['node-tablelist']['examples']['drush node-tablelist'] = 'Simply returns a listing of the nodes.';
-$items['node-tablelist']['examples']['drush ntl'] = 'Using the alias, returns a listing of the nodes.';
-$items['node-tablelist']['examples']['drush notable'] = 'Using the alias, returns a listing of the nodes.';
-
+_render_help_documentation($items);
 
 return $items;
 }
+/**
+ * END Drush Command Essential Functions
+ */
+
+/**
+ * Drush Naming Convention Functions
+ * * these function will auto-magically be called based on the drush
+ *       naming conventions
+ * * they are the starting point for writing the code that implements your command
+ * * these should manage only the 'drush specific' aspects of the command, including
+ *       but not limited to:
+ * * - implementing any drush UI, such as drush_choice()
+ * * - validating argumants, aliases, and arguments
+ */
 
 /**
  * Callback for the drush-demo-command command
  */
 function drush_node_table_node_tablelist($which_list = FALSE) {
+  _render_drush_context(TRUE);
+  return;
 //drush_mymodule_custom_save_node
   // Check for existence of argument
     $arguments = _which_list_arguments(); //use custom function to encapsulate
@@ -76,9 +118,64 @@ function drush_node_table_node_tablelist($which_list = FALSE) {
 
   drush_print($which_list);
   return;
-  // _drush_execute_node_tablelist($which_list);
+  // _do_node_tablelist($which_list);
 } //END function drush_node_tablelist($which_list = FALSE)
 
+
+/**
+ * Callback for the drush-demo-command command
+ */
+function drush_node_table_fahrenheit_celcius(){
+  // $output_structure = drush_context_names();
+  // $output_structure = drush_context_names();
+  // $output_structure = drush_get_context();
+  // $output = print_r($output_structure, TRUE);
+  // drush_print($output);
+  // return;
+
+  $context = _render_drush_context();
+  // return;
+  // $error = array();
+  // $context = drush_get_context();
+  // // [DRUSH_COMMAND_ARGS]
+  $arguments = $context['custom']['arguments'];
+  $arg_count = count($context['drush']['arguments']) + 0;
+  $degrees_fahrenheit = $arguments['degrees_fahrenheit'];
+  if ($arg_count != 1) {
+    return drush_set_error(dt('"@arg_count" is not the expected number of arguments [1 expected].',
+      array('@arg_count' => $arg_count)));
+  }
+  $degrees_fahrenheit = str_replace('/', '', $degrees_fahrenheit);
+  if (!is_numeric($degrees_fahrenheit)) {
+    return drush_set_error(dt('Argument must be numeric ["@degrees_fahrenheit" is not numeric].',
+      array('@degrees_fahrenheit' => $degrees_fahrenheit)));
+  }
+  $degrees_fahrenheit += 0;
+  if ($degrees_fahrenheit < -459.67) {
+    return drush_set_error(dt('Argument is out of range ["@degrees_fahrenheit" degrees Fahrenheit is is below absolute zero].',
+      array('@degrees_fahrenheit' => $degrees_fahrenheit)));
+  }
+  // $output = print_r($degrees_fahrenheit, TRUE);
+  // drush_print($output);
+  // return;
+_do_convert_fahrenheit_to_celcius($degrees_fahrenheit);
+}
+
+/**
+ * Callback for the drush-demo-command command
+ */
+function drush_node_table_developer_vardump() {
+  _do_developer_vardump();
+}
+/**
+ * END Drush Naming Convention Functions
+ */
+
+/**
+ * Drush Utility Functions
+ * * functions here may facilitate one or more aspects of compo
+ *
+ */
 function _which_list_arguments($which = 'array'){
   $which_arguments = array();
   $which_arguments['list'] = "Help Choice for Node Table List 'List' argument.";
@@ -118,3 +215,158 @@ function _which_list_arguments($which = 'array'){
   }
   return; //OOAAOC
 }
+
+function _render_help_documentation(&$items) {
+/**
+  * $items Append & Overload below
+  * description ONLY here
+  * examples ONLY here
+  * aliases isn't associative so NEVER here
+  * others fleshed out for HELP command
+  */
+
+
+  _render_help_documentation_default($items);
+}
+function _render_help_documentation_default(&$items) {
+  foreach ($items as $command => $command_attributes) {
+    if (empty($command_attributes['description'])) {
+      $items[$command]['description'] = "Description for the drush command '{$command}'.";
+    }
+    $descr_example['Description as First Example'] = $items[$command]['description'];
+    if (is_array($items[$command]['examples'])) {
+      $items[$command]['examples'] = $descr_example + $items[$command]['examples'];
+    }else{
+      $items[$command]['examples'] = $descr_example;
+    }
+    if (is_array($command_attributes['arguments'])) {
+      foreach ($command_attributes['arguments'] as $argument => $argument_descr) {
+        if ($argument_descr == 'is argument') {
+          $items[$command]['arguments'][$argument] = "Longer description of Argument '{$argument}'";
+        }
+      }
+    }
+    if (is_array($command_attributes['options'])) {
+      foreach ($command_attributes['options'] as $option => $option_descr) {
+        if ($option_descr == 'is option') {
+          $items[$command]['options'][$option] = "Longer description of Option '{$option}'";
+        }
+      }
+    }
+  }
+}
+function _render_drush_context($print = FALSE) {
+  $print = $print !== TRUE ? FALSE : TRUE;
+
+  $context = drush_get_context();
+  $command = $context['command'];
+
+  $argument_values = $command['arguments'];
+  $argument_keys = array_keys($command['argument-description']);
+  $count_argument_values = count($argument_values);
+  $count_argument_keys = count($argument_keys);
+  if ($count_argument_keys > $count_argument_values) {
+    foreach ($argument_keys as $index => $key) {
+      if (empty($argument_values[$index])) {
+        $argument_values[$index] = "missing_argument";
+      }
+    }
+  }
+  if ($count_argument_values > $count_argument_keys) {
+    foreach ($argument_values as $index => $value) {
+      if (empty($argument_keys[$index])) {
+        $argument_keys[$index] = "extra_arg_{$index}";
+      }
+    }
+  }
+  $option_keys = $command['options'];
+  $option_values = $context['cli'];
+  foreach ($option_keys as $key => $descr) {
+    $option_array[$key] = empty($option_values[$key]) ? 'not_provided' : $option_values[$key];
+  }
+
+
+  $developer_friedly_array = array();
+  $dfa = array();
+  $dfa_drush = array();
+  $dfa_drush['command'] = $command['command'];
+  $dfa_drush['argument-description'] = $command['argument-description'];
+  $dfa_drush['arguments'] = $command['arguments'];
+  $dfa_drush['options'] = $command['options'];
+  $dfa_drush['cli'] = $context['cli'];
+  $dfa_drush['aliases'] = $command['aliases'];
+  $dfa_custom = array();
+  $hook = 'drush_' . $command['commandfile'] . '_';
+  $hook .= str_replace('-', '_', $command['command-hook']) . '()';
+  $dfa_custom['command_hook_function'] = $hook;
+  $dfa_custom['arguments'] = array_combine($argument_keys, $argument_values);
+  $dfa_custom['options'] = $option_array;
+  $developer_friedly_array['drush'] = $dfa_drush;
+  $developer_friedly_array['custom'] = $dfa_custom;
+  if ($print) {
+    $header = "Output from '" . __FUNCTION__ . "()':\r\n======================================\r\n";
+    $output = print_r($developer_friedly_array, TRUE);
+    drush_print($header . $output);
+  }
+  return $developer_friedly_array;
+}
+/**
+ * END Drush Utility Functions
+ */
+
+
+/**
+ * Drush Specific Functions
+ * * including functions that are called by the 'Drush Naming Convention Functions'
+ *   \_ aka the '_do()' functions
+ * * the 'Drush Naming Convention Fuctions' :
+ * * - are the functions that are called automatically by way of the the drush command name
+ *
+ */
+/**
+ * Example function.
+ */
+
+function _do_node_tablelist($which_list) {
+    $buffer = '';
+    $buffer .= "'" . $which_list . "' was the argument provided/selected to function '" . __FUNCTION__ . "'.";
+  drush_print($buffer);
+}
+
+function _do_convert_fahrenheit_to_celcius($degrees_fahrenheit) {
+  $degrees_celcius = $degrees_fahrenheit;
+  $degrees_celcius -= 32;
+  $degrees_celcius *= 5;
+  $degrees_celcius /= 9;
+  $degrees_celcius = round($degrees_celcius,2);
+
+  $degrees_to_celcius_string = "{$degrees_fahrenheit} degrees Fahrenheit\r\nis equal to\r\n{$degrees_celcius} degrees Celcius";
+  drush_print($degrees_to_celcius_string);
+}
+
+function _do_developer_vardump() {
+  $header = "Output from '" . __FUNCTION__ . "()':\r\n==========\r\n";
+  $output = 'Hello Drupal Camp Twin-Cities 2016!';//'Hello World!';
+
+  // $thing_array = array();
+  // $i = -1;
+  // $i++;
+  // $thing[$i]['thing'] = 'Corvette';
+  // $thing[$i]['type'] = 'Little';
+  // $thing[$i]['color'] = 'Red';
+  // $i++;
+  // $thing[$i]['thing'] = 'Meanies';
+  // $thing[$i]['type'] = 'Screaming';
+  // $thing[$i]['color'] = 'Blue';
+  // $i++;
+  // $thing[$i]['thing'] = 'Fox';
+  // $thing[$i]['type'] = 'Quick';
+  // $thing[$i]['color'] = 'Brown';
+  // $output = print_r($thing, TRUE);
+
+  drush_print($header . $output);
+}
+
+/**
+ * END Drush Specific Functions
+ */
