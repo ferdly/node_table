@@ -40,16 +40,13 @@ function node_table_drush_command() {
       'ntl',
       'notable',
       ),
-    'arguments' => array(
-      'list' => 'is argument',
-      'groupby' => 'is argument',
-      'cube' => 'is argument',
-    ),
     'options' => array(
+      'context' => 'is option',
       'orderby' => 'is option',
-      'count' => 'is option',
-      'page' => 'is option',
+      'limit' => 'is option',
+      'list' => 'is option',
       'content_types' => 'is option',
+      'dev' => 'is option',
     ),
   );
   $items['fahrenheit-celcius'] = array(
@@ -60,10 +57,7 @@ function node_table_drush_command() {
       'degrees_fahrenheit' => 'is argument',
     ),
     'options' => array(
-      'orderby' => 'is option',
-      'count' => 'is option',
-      'page' => 'is option',
-      'content_types' => 'is option',
+      'context' => 'is option',
     ),
   );
   $items['developer-vardump'] = array(
@@ -95,10 +89,30 @@ return $items;
  * Callback for the drush-demo-command command
  */
 function drush_node_table_node_tablelist($which_list = FALSE) {
-  _render_drush_context(TRUE);
+  $print = drush_get_option('context', 0);
+  $print = $print == 1 ? TRUE : FALSE;
+  $context = _render_drush_context($print);
+  $options = $context['custom']['options'];
+  unset($options['context']); //already evalauted
+  $dev = $options['dev'] == 1 ? TRUE : FALSE; //affects below
+  $orderby = $options['orderby'] == 'not_provided' ? 'RANDOM' : strtoupper($options['orderby']);
+  $orderby = $orderby == 'NODE_ID' ? 'NID' : $orderby; //Alias
+  $orderby = $orderby == 'NODEID' ? 'NID' : $orderby; //Alias
+  $limit_default = $dev ? 1 : 10;
+  $limit = $options['limit'] == 'not_provided' ? $limit_default : $options['limit'];
+  $list = $options['list'] == 'not_provided' ? '' : $options['list'];
+  /*<Validation Here>*/
+  $supported_orderby_array = array('RANDOM','NID','TITLE',);
+  /*</Validation Here>*/
+  $option_array['limit'] = $limit;
+  $option_array['list'] = $list;
+  $option_array['content_types'] = $content_types;
+  $option_array['orderby'] = $orderby;
+  $option_array['dev'] = $dev;
+  _do_node_tablelist($option_array);
   return;
 //drush_mymodule_custom_save_node
-  // Check for existence of argument
+  // KEEP FOR CONTENT_TYPES LATER
     $arguments = _which_list_arguments(); //use custom function to encapsulate
     if (!$which_list) {
         $which_list = drush_choice($arguments, dt('Which Example would you like to interact with using \'PHP-Coder\'?'));
@@ -126,21 +140,12 @@ function drush_node_table_node_tablelist($which_list = FALSE) {
  * Callback for the drush-demo-command command
  */
 function drush_node_table_fahrenheit_celcius(){
-  // $output_structure = drush_context_names();
-  // $output_structure = drush_context_names();
-  // $output_structure = drush_get_context();
-  // $output = print_r($output_structure, TRUE);
-  // drush_print($output);
-  // return;
+  $print = drush_get_option('context', 0);
+  $print = $print == 1 ? TRUE : FALSE;
+  $context = _render_drush_context($print);
 
-  $context = _render_drush_context();
-  // return;
-  // $error = array();
-  // $context = drush_get_context();
-  // // [DRUSH_COMMAND_ARGS]
-  $arguments = $context['custom']['arguments'];
   $arg_count = count($context['drush']['arguments']) + 0;
-  $degrees_fahrenheit = $arguments['degrees_fahrenheit'];
+  $degrees_fahrenheit = $context['custom']['arguments']['degrees_fahrenheit'];
   if ($arg_count != 1) {
     return drush_set_error(dt('"@arg_count" is not the expected number of arguments [1 expected].',
       array('@arg_count' => $arg_count)));
@@ -155,9 +160,6 @@ function drush_node_table_fahrenheit_celcius(){
     return drush_set_error(dt('Argument is out of range ["@degrees_fahrenheit" degrees Fahrenheit is is below absolute zero].',
       array('@degrees_fahrenheit' => $degrees_fahrenheit)));
   }
-  // $output = print_r($degrees_fahrenheit, TRUE);
-  // drush_print($output);
-  // return;
 _do_convert_fahrenheit_to_celcius($degrees_fahrenheit);
 }
 
@@ -327,10 +329,34 @@ function _render_drush_context($print = FALSE) {
  * Example function.
  */
 
-function _do_node_tablelist($which_list) {
-    $buffer = '';
-    $buffer .= "'" . $which_list . "' was the argument provided/selected to function '" . __FUNCTION__ . "'.";
-  drush_print($buffer);
+function _do_node_tablelist($options_array = array()) {
+    drush_print(print_r($options_array, TRUE));
+    $node_array = _gather_node_object_array($options_array);
+
+    if ($dev === TRUE) {
+      $output = print_r($node_array, TRUE);
+      drush_print($output);
+    }else{
+      $i = 0;
+      $column_array = array('nid', 'type', 'title');
+      foreach ($node_array as $nid => $node_object) {
+        if ($i == 0) {
+          $rows[$i]['rownum'] = '#';
+          foreach ($column_array as $index => $column) {
+            $rows[$i][$column] = ucwords($column);
+          }
+        }
+        $i++;
+        $rows[$i]['rownum'] = $i;
+        foreach ($column_array as $index => $column) {
+          $rows[$i][$column] = $node_object->$column;
+        }
+      }
+    $header = 'Node Listing';
+    drush_print_table($rows, $header);
+      // $output = print_r($node_array, TRUE);
+      // drush_print($output);
+    }
 }
 
 function _do_convert_fahrenheit_to_celcius($degrees_fahrenheit) {

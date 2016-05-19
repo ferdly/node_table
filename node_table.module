@@ -1,11 +1,43 @@
 <?php
 
-/**
- * Example function.
- */
+function _gather_node_object_array($options_array) {
+    foreach ($options_array as $key => $value) {
+      $$key = $value;
+    }
+    if (!empty($list)) {
+      $in_array = explode(',', $list);
+    }else{
+      $in_array = FALSE;
+    }
+    $nodeQuery = new EntityFieldQuery();
+    $nodeQuery->entityCondition('entity_type', 'node')
+    ->range(0, $limit);
+    if (is_array($in_array)) {
+      $nodeQuery->propertyCondition('nid', $in_array, 'IN');
+    }
+    if ($orderby == 'RANDOM') {
+      $nodeQuery->addTag('random');
+    }
+    if (in_array($orderby, array('NID','TITLE'))) {
+      $column = strtolower($orderby);
+      $nodeQuery->propertyOrderBy($column);
+    }
 
-function _drush_execute_node_tablelist($which_list) {
-    $buffer = '';
-    $buffer .= "'" . $which_list . "' was the argument provided/selected to function '" . __FUNCTION__ . "'.";
-  drush_print($buffer);
+    // ->fieldCondition('field_status', 'value', 1)
+    // ->propertyOrderBy('tid', 'DESC')
+    $result = $nodeQuery->execute();
+    // $node_array = $result;
+    $nid_array = array_keys($result['node']);
+    // $nid_array = array(4);
+    // $conditions = array();
+    // $reset = array();
+    $node_array = node_load_multiple($nid_array);
+    return $node_array;
+}
+
+/**
+ * Implementation of hook_query_TAG_alter
+ */
+function node_table_query_random_alter($query) {
+  $query->orderRandom();
 }
