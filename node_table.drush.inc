@@ -98,41 +98,56 @@ function drush_node_table_node_tablelist($which_list = FALSE) {
   $orderby = $options['orderby'] == 'not_provided' ? 'RANDOM' : strtoupper($options['orderby']);
   $orderby = $orderby == 'NODE_ID' ? 'NID' : $orderby; //Alias
   $orderby = $orderby == 'NODEID' ? 'NID' : $orderby; //Alias
-  $limit_default = $dev ? 1 : 10;
+  $limit_default = $dev ? '1' : '10';
   $limit = $options['limit'] == 'not_provided' ? $limit_default : $options['limit'];
+  $content_types = $options['content_types'] != 'not_provided' ? $options['content_types'] : '';
+  $content_types = $options['content_types'] === TRUE ? '1' : $content_types;
+  $content_types = strtolower($content_types);
   $list = $options['list'] == 'not_provided' ? '' : $options['list'];
   /*<Validation Here>*/
+  $list_test = str_replace(' ', '', str_replace(',', '', $list));
+  if (!empty($list) && !ctype_digit($list_test)) {
+    return drush_set_error(dt('"@list" is not a valid List Option. List must contain only integers, commas and (optionally) spaces.' . __LINE__,
+      array('@list' => $list)));
+  }
+  if (!ctype_digit($limit)) {
+    return drush_set_error(dt('"@limit" is not a valid Limit Option. Limit must be a positive integer.' .  __LINE__,
+      array('@limit' => $limit)));
+  }
   $supported_orderby_array = array('RANDOM','NID','TITLE',);
+  if (!in_array($orderby, $supported_orderby_array)) {
+    return drush_set_error(dt('"@orderby" is not a valid Order By Option. Please choose among \'nid\' and \'title\'[\'random\' is default]. ',
+      array('@orderby' => $orderby)));
+    }
+  $options = _which_list_options(); //use custom function to encapsulate
+  $content_type_orig = $content_types;
+  $content_types_true_only = ctype_digit($content_type_orig) && $content_type_orig + 0 == 1 ? TRUE : FALSE;
+  $content_type_choice = '';
+  if ($content_types_true_only) {
+    $content_type_choice = drush_choice($options, dt('Which Content Type would you like to List the Nodes of?'));
+  } //END if ($content_types_true_only)
+  if ($content_type_choice == '0') {
+    drush_user_abort('Buh-Bye! Node Table List!');
+    return;
+  }
+  $content_type_after = empty($content_type_choice) ? $content_type_orig : $content_type_choice;
+    // Check for correct argument
+  if (!empty($content_type_after)) {
+    $correct_opts = array_keys($options);
+    if (!in_array($content_type_after, $correct_opts)) {
+      $string = _which_list_options('string');
+      return drush_set_error(dt('"@type" is not a valid Content Type. ',
+        array('@type' => $content_type_after)) . $string);
+    }
+  } // END if (!empty($content_type_after))
   /*</Validation Here>*/
   $option_array['limit'] = $limit;
   $option_array['list'] = $list;
-  $option_array['content_types'] = $content_types;
+  $option_array['content_types'] = $content_type_after;
   $option_array['orderby'] = $orderby;
   $option_array['dev'] = $dev;
   _do_node_tablelist($option_array);
   return;
-//drush_mymodule_custom_save_node
-  // KEEP FOR CONTENT_TYPES LATER
-    $arguments = _which_list_arguments(); //use custom function to encapsulate
-    if (!$which_list) {
-        $which_list = drush_choice($arguments, dt('Which Example would you like to interact with using \'PHP-Coder\'?'));
-    }
-
-  // Check for correct argument
-  $correct_args = array_keys($arguments);
-  if (!in_array($which_list, $correct_args)) {
-    if ($which_list == '0') {
-      drush_user_abort('Buh-Bye! Node Table List!');
-      return;
-    }
-    $string = _which_list_arguments('string');
-    return drush_set_error(dt('"@type" is not a valid example. ',
-      array('@type' => $example)) . $string);
-  }
-
-  drush_print($which_list);
-  return;
-  // _do_node_tablelist($which_list);
 } //END function drush_node_tablelist($which_list = FALSE)
 
 
@@ -178,40 +193,40 @@ function drush_node_table_developer_vardump() {
  * * functions here may facilitate one or more aspects of compo
  *
  */
-function _which_list_arguments($which = 'array'){
-  $which_arguments = array();
-  $which_arguments['list'] = "Help Choice for Node Table List 'List' argument.";
-  $which_arguments['groupby'] = "Help Choice for Node Table List 'GroupBy' argument.";
-  $which_arguments['cube'] = "Help Choice for Node Table List 'Cube' argument.";
-
+function _which_list_options($which = 'array'){
+  $which_options = array();
+  $which_options['list'] = "Help Choice for Node Table List 'List' argument.";
+  $which_options['groupby'] = "Help Choice for Node Table List 'GroupBy' argument.";
+  $which_options['cube'] = "Help Choice for Node Table List 'Cube' argument.";
+  $which_options = _get_content_type_option_array();
   switch ($which) {
     case 'array':
-      return $which_arguments;
+      return $which_options;
       break;
     case 'string':
-      $correct_args = array_keys($which_arguments);
-      $correct_args_count = count($correct_args);
-      $first_args = $correct_args;
-      $last_arg = '"' .  array_pop($first_args) . '"';
-      $first_args_list = implode(",", $first_args);
-      $first_args_list = '"' . str_replace(",", '", "', $first_args_list) . '"';
+      $correct_opts = array_keys($which_options);
+      $correct_opts_count = count($correct_opts);
+      $first_opts = $correct_opts;
+      $last_opt = '"' .  array_pop($first_opts) . '"';
+      $first_opts_list = implode(",", $first_opts);
+      $first_opts_list = '"' . str_replace(",", '", "', $first_opts_list) . '"';
       $zero = 'Please ask for assistance, there are currently no php_coder examples in use';
       $non_zero = 'Please select';
-      $grammar = $correct_args_count > 2?' among ':': ';
-      $grammar = $correct_args_count == 2?' between ':$grammar;
+      $grammar = $correct_opts_count > 2?' among ':': ';
+      $grammar = $correct_opts_count == 2?' between ':$grammar;
       $list = '';
-      $list = $correct_args_count == 1?$last_arg:$list;
-      $list = $correct_args_count > 1?$first_args_list. ' and ' . $last_arg:$list;
-      if ($correct_args_count == 0) {
+      $list = $correct_opts_count == 1?$last_opt:$list;
+      $list = $correct_opts_count > 1?$first_opts_list. ' and ' . $last_opt:$list;
+      if ($correct_opts_count == 0) {
         $string = $zero;
       }else{
-        $string = $non_zero . $grammar . $list . '. (Or supply no example and select from prompted values.)';
+        $string = $non_zero . $grammar . $list . '. (Or supply no Content Type [ just "--content_types"] and select from prompted values.)';
       }
       return $string;
       break;
 
     default:
-      return $which_arguments;
+      return $which_options;
       #\_ OOAAOC notwithstanding default $which, this is its raison detre
       break;
   }
@@ -330,32 +345,30 @@ function _render_drush_context($print = FALSE) {
  */
 
 function _do_node_tablelist($options_array = array()) {
-    drush_print(print_r($options_array, TRUE));
+    // drush_print(print_r($options_array, TRUE));
     $node_array = _gather_node_object_array($options_array);
 
     if ($dev === TRUE) {
       $output = print_r($node_array, TRUE);
       drush_print($output);
     }else{
+      $rows = array();
       $i = 0;
       $column_array = array('nid', 'type', 'title');
+      $rows[$i]['rownum'] = '#';
+      foreach ($column_array as $index => $column) {
+        $rows[$i][$column] = ucwords($column);
+      }
       foreach ($node_array as $nid => $node_object) {
-        if ($i == 0) {
-          $rows[$i]['rownum'] = '#';
-          foreach ($column_array as $index => $column) {
-            $rows[$i][$column] = ucwords($column);
-          }
-        }
         $i++;
         $rows[$i]['rownum'] = $i;
         foreach ($column_array as $index => $column) {
           $rows[$i][$column] = $node_object->$column;
         }
       }
-    $header = 'Node Listing';
+    $header = TRUE;
+    drush_print('Node Table-List Result');
     drush_print_table($rows, $header);
-      // $output = print_r($node_array, TRUE);
-      // drush_print($output);
     }
 }
 
